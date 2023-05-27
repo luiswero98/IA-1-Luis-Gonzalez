@@ -1,0 +1,62 @@
+import random
+
+def generate_data(n):
+    data = []
+    for _ in range(n):
+        x = random.randint(1, 100)
+        y = random.randint(1, 100)
+        data.append((x, y))
+    return data
+
+#funcion para calcular el valor de beta 0 y beta 1.
+def calculate_coefficients(data):
+    n = len(data)
+    sum_x = sum_y = sum_xy = sum_x_squared = 0
+    for x, y in data:
+        sum_x += x
+        sum_y += y
+        sum_xy += x * y
+        sum_x_squared += x ** 2
+    total_x = sum_x / n
+    total_y = sum_y / n
+    beta_1 = (sum_xy - n * total_x * total_y) / (sum_x_squared - n * total_x ** 2)
+    beta_0 = total_y - beta_1 * total_x
+    return beta_0, beta_1
+
+#funcion para calcular la prediccion aplicando la formula de regresion lineal simple
+def predict_y(x, beta_0, beta_1):
+    return beta_0 + beta_1 * x
+
+#funcion para calcular r_Squared
+def calculate_r_squared(data, beta_0, beta_1):
+    n = len(data)
+    sum_residuals = sum_squared_residuals = 0
+    for x, y in data:
+        y_pred = predict_y(x, beta_0, beta_1)
+        residual = y - y_pred
+        sum_residuals += residual
+        sum_squared_residuals += residual ** 2
+    total_y = sum(y for _, y in data) / n
+    ss_total = sum((y - total_y) ** 2 for _, y in data)
+    r_squared = 1 - (sum_squared_residuals / ss_total)
+    return r_squared
+
+#Generar datos random para predecir
+data = generate_data(100)
+
+# Calcular coeficiente utilizando beta 0 y beta 1 de la funcion anterior
+beta_0, beta_1 = calculate_coefficients(data)
+
+# Imprime la ecuacion de regresion simple linear
+print(f"Ecuacion de regresion lineal simple: y = {beta_0:.2f} + {beta_1:.2f} * x")
+
+# Predecir Y con un valor X que debemos ingresar
+x_input = float(input("Ingrese el valor de X para predecir Y: "))
+y_predicted = predict_y(x_input, beta_0, beta_1)
+print(f"Valor de prediccion de Y usando x = {x_input}: {y_predicted:.2f}")
+
+# calcular rquared en base al valor de x que se ingreso para predecir Y
+r_squared = calculate_r_squared(data, beta_0, beta_1)
+print(f"Valor R-squared: {r_squared:.2f}")
+
+
