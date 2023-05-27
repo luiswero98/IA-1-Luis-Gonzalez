@@ -1,0 +1,92 @@
+import random
+import matplotlib.pyplot as plt
+import numpy as np
+
+def max_ones(arr):
+    max_count = 0
+    count = 0
+    for i in range(len(arr)):
+        if arr[i] == 1:
+            count += 1
+            if count > max_count:
+                max_count = count
+        else:
+            count = 0
+    return max_count
+
+def fitness(individual):
+    return sum(individual)
+
+def crossover(parent1, parent2):
+    # Se selecciona un punto de crossover al azar
+    crossover_point = random.randint(0, len(parent1)-1)
+    # Se crea un hijo combinando 2 padres 
+    child = parent1[:crossover_point] + parent2[crossover_point:]
+    return child
+
+def mutation(individual, mutation_rate):
+    for i in range(len(individual)):
+        if random.random() < mutation_rate:
+            individual[i] = 1 - individual[i]
+    return individual
+
+def roulette_wheel_selection(population, fitnesses):
+    total_fitness = sum(fitnesses)
+    selection_probs = np.array(fitnesses) / total_fitness
+    selected = np.random.choice(range(len(population)), size=2, replace=False, p=selection_probs)
+    return population[selected[0]], population[selected[1]]
+
+def genetic_algorithm(population_size, crossover_rate, mutation_rate, num_generations):
+    # Se inicializa la poblacion
+    population = []
+    n = random.randint(5, 20)
+    for i in range(population_size):
+        individual = [random.randint(0, 1) for _ in range(n)]
+        population.append(individual)
+
+    fitnesses = []
+    best_fitness = 0
+
+    for gen in range(num_generations):
+        # Se evalua el fitness de cada individuo de la poblacion
+        fitnesses = [fitness(individual) for individual in population]
+        best_fitness = max(fitnesses)
+
+        # Se seleccionan 2 padres al azar con el metodo de roulette wheel
+        parent1, parent2 = roulette_wheel_selection(population, fitnesses)
+
+        # Se ejecuta el crossover para crear un nuevo hijo
+        if random.random() < crossover_rate:
+            child = crossover(parent1, parent2)
+        else:
+            child = parent1
+
+        # Se ejecuta  mutacion en el hijo
+        child = mutation(child, mutation_rate)
+
+        #  Se reemplaza un individuo a la azar de la poblacion con un hijo
+        population[random.randint(0, population_size-1)] = child
+
+    # Regresa el individuo con el fitness mas alto
+    best_individual = population[fitnesses.index(best_fitness)]
+    return best_individual, best_fitness, fitnesses
+
+# Ejemplo
+best_individual, best_fitness, fitnesses = genetic_algorithm(population_size=20, crossover_rate=0.8, mutation_rate=0.1, num_generations=100)
+
+# Imprime el mejor individuo de la poblacion y el mejor fitness
+print("Best individual:", best_individual)
+print("Best fitness:", best_fitness)
+
+# Grafica el fitness y la poblacion 
+plt.title("Fitness over generations")
+plt.xlabel("Generation")
+plt.ylabel("Fitness")
+plt.plot(fitnesses)
+plt.show()
+
+# Grafica roulette wheel
+plt.title("Roulette Wheel")
+plt.pie(fitnesses, labels=range(len(fitnesses)), autopct='%1.1f%%')
+plt.show()
+
